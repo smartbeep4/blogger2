@@ -10,21 +10,11 @@ services:
   # Web Service (Flask Backend + React Frontend)
   - type: web
     name: blogger2
-    env: python
+    env: docker
     region: oregon
     plan: free
-    buildCommand: |
-      # Install Python dependencies
-      pip install -r backend/requirements.txt
-      # Build frontend
-      cd frontend && npm install && npm run build && cd ..
-      # Run database migrations
-      cd backend && python migrate.py && cd ..
-    startCommand: cd backend && gunicorn -w 1 -b 0.0.0.0:$PORT run:app
-    healthCheckPath: /api/health
+    dockerfilePath: ./Dockerfile
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
       - key: FLASK_APP
         value: run
       - key: FLASK_ENV

@@ -27,7 +27,7 @@ def create_app(config_name=None):
     Returns:
         Configured Flask application
     """
-    app = Flask(__name__, static_folder='../../frontend/dist', static_url_path='')
+    app = Flask(__name__, static_folder='../frontend/dist', static_url_path='')
 
     # Load configuration
     if config_name is None:
