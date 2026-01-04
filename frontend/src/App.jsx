@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import PostList from "./components/posts/PostList";
+import PostEditor from "./components/posts/PostEditor";
+import api from "./services/api";
 
 // Header component with navigation
 const Header = () => {
@@ -214,11 +216,100 @@ const Register = () => {
     </div>
   );
 };
-const Dashboard = () => (
-  <div className="container mt-3">
-    <h1>Dashboard</h1>
-  </div>
-);
+const Dashboard = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const response = await api.get("/posts", {
+          params: { author: user?.username }
+        });
+        setPosts(response.data.posts);
+      } catch (err) {
+        setError("Failed to load posts");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (user?.username) {
+      fetchPosts();
+    }
+  }, [user?.username]);
+
+  const handleDelete = async (postId) => {
+    if (!confirm("Are you sure you want to delete this post?")) return;
+
+    try {
+      await api.delete(`/posts/${postId}`);
+      setPosts(posts.filter(p => p.id !== postId));
+    } catch (err) {
+      alert("Failed to delete post");
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="spinner"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mt-3">
+      <div className="dashboard-header">
+        <h1>My Posts</h1>
+        <Link to="/posts/new" className="btn btn-primary">New Post</Link>
+      </div>
+
+      {error && <div className="error-message">{error}</div>}
+
+      {posts.length === 0 ? (
+        <div className="empty-state">
+          <p>You haven't created any posts yet.</p>
+          <Link to="/posts/new" className="btn btn-primary">Create Your First Post</Link>
+        </div>
+      ) : (
+        <div className="dashboard-posts">
+          {posts.map(post => (
+            <div key={post.id} className="dashboard-post-card">
+              <div className="dashboard-post-info">
+                <h3>{post.title}</h3>
+                <div className="dashboard-post-meta">
+                  <span className={`status-badge status-${post.status}`}>
+                    {post.status}
+                  </span>
+                  <span>{new Date(post.created_at).toLocaleDateString()}</span>
+                  {post.view_count > 0 && <span>{post.view_count} views</span>}
+                </div>
+              </div>
+              <div className="dashboard-post-actions">
+                <button
+                  onClick={() => navigate(`/posts/${post.id}/edit`)}
+                  className="btn btn-outline"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(post.id)}
+                  className="btn btn-danger"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 const PostDetail = () => (
   <div className="container mt-3">
     <h1>Post Detail</h1>
@@ -226,12 +317,12 @@ const PostDetail = () => (
 );
 const CreatePost = () => (
   <div className="container mt-3">
-    <h1>Create Post</h1>
+    <PostEditor />
   </div>
 );
 const EditPost = () => (
   <div className="container mt-3">
-    <h1>Edit Post</h1>
+    <PostEditor />
   </div>
 );
 const Profile = () => (
