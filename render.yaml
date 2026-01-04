@@ -1,0 +1,46 @@
+services:
+  # PostgreSQL Database
+  - type: pserv
+    name: blogger2-db
+    env: docker
+    plan: free
+    region: oregon
+    ipAllowList: []
+
+  # Web Service (Flask Backend + React Frontend)
+  - type: web
+    name: blogger2
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: |
+      pip install -r backend/requirements.txt
+      cd frontend && npm install && npm run build && cd ..
+      cd backend && flask db upgrade && cd ..
+    startCommand: cd backend && gunicorn -w 1 -b 0.0.0.0:$PORT run:app
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: FLASK_APP
+        value: backend/run.py
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: blogger2-db
+          property: connectionString
+      - key: IMAGEKIT_PRIVATE_KEY
+        sync: false
+      - key: IMAGEKIT_PUBLIC_KEY
+        sync: false
+      - key: IMAGEKIT_URL_ENDPOINT
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://blogger2.onrender.com
+      - key: RATELIMIT_STORAGE_URL
+        value: memory://

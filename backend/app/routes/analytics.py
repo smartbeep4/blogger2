@@ -1,0 +1,7 @@
+"""Analytics routes."""
+from flask import Blueprint
+
+bp = Blueprint('analytics', __name__)
+
+# Routes will be implemented here
+
