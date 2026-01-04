@@ -126,10 +126,22 @@ export default function PostEditor() {
     setErrors({});
 
     try {
+      // Build data object, only including optional fields if they have values
       const data = {
-        ...formData,
+        title: formData.title,
+        content: formData.content,
         status: publishNow ? "published" : formData.status,
+        category_ids: formData.category_ids,
+        tag_ids: formData.tag_ids,
       };
+
+      // Only include optional fields if they have values
+      if (formData.excerpt) {
+        data.excerpt = formData.excerpt;
+      }
+      if (formData.featured_image_url) {
+        data.featured_image_url = formData.featured_image_url;
+      }
 
       if (id) {
         await api.put(`/posts/${id}`, data);
