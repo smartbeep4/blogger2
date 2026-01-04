@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
+import { useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate, Link, useNavigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import PostList from "./components/posts/PostList";
 
@@ -47,16 +48,172 @@ const Home = () => (
     <PostList />
   </div>
 );
-const Login = () => (
-  <div className="container mt-3">
-    <h1>Login</h1>
-  </div>
-);
-const Register = () => (
-  <div className="container mt-3">
-    <h1>Register</h1>
-  </div>
-);
+const Login = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { login, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    const result = await login({ email, password });
+
+    if (result.success) {
+      navigate("/dashboard");
+    } else {
+      setError(result.error);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="container mt-3">
+      <div className="auth-form">
+        <h1>Login</h1>
+        {error && <div className="error-message">{error}</div>}
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={loading}
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              disabled={loading}
+            />
+          </div>
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? "Logging in..." : "Login"}
+          </button>
+        </form>
+        <p className="auth-link">
+          Don't have an account? <Link to="/register">Register</Link>
+        </p>
+      </div>
+    </div>
+  );
+};
+
+const Register = () => {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [displayName, setDisplayName] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { register, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    const userData = {
+      username,
+      email,
+      password,
+      ...(displayName && { display_name: displayName }),
+    };
+
+    const result = await register(userData);
+
+    if (result.success) {
+      navigate("/dashboard");
+    } else {
+      setError(result.error);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <div className="container mt-3">
+      <div className="auth-form">
+        <h1>Register</h1>
+        {error && <div className="error-message">{error}</div>}
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="username">Username</label>
+            <input
+              type="text"
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              minLength={3}
+              disabled={loading}
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              type="email"
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              disabled={loading}
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="displayName">Display Name (optional)</label>
+            <input
+              type="text"
+              id="displayName"
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              disabled={loading}
+            />
+          </div>
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              type="password"
+              id="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              minLength={8}
+              disabled={loading}
+            />
+            <small>Must be at least 8 characters</small>
+          </div>
+          <button type="submit" className="btn btn-primary" disabled={loading}>
+            {loading ? "Creating account..." : "Register"}
+          </button>
+        </form>
+        <p className="auth-link">
+          Already have an account? <Link to="/login">Login</Link>
+        </p>
+      </div>
+    </div>
+  );
+};
 const Dashboard = () => (
   <div className="container mt-3">
     <h1>Dashboard</h1>
