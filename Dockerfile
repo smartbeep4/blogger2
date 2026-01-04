@@ -24,10 +24,7 @@ RUN npm install && npm run build
 WORKDIR /app
 COPY backend/ backend/
 
-# Run database migrations (with build flag)
-ENV DOCKER_BUILD=1
-RUN cd backend && python migrate.py
-ENV DOCKER_BUILD=
+# Database migrations will be run at startup
 
 # Expose port
 EXPOSE 5000
@@ -36,5 +33,5 @@ EXPOSE 5000
 ENV FLASK_APP=run
 ENV FLASK_ENV=production
 
-# Start the application
-CMD ["gunicorn", "-w", "1", "-b", "0.0.0.0:5000", "run:app"]
+# Start the application (run migrations first, then start gunicorn)
+CMD cd backend && python migrate.py && gunicorn -w 1 -b 0.0.0.0:5000 run:app
