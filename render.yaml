@@ -16,7 +16,7 @@ services:
     buildCommand: |
       pip install -r backend/requirements.txt
       cd frontend && npm install && npm run build && cd ..
-      cd backend && flask db upgrade && cd ..
+      cd backend && python -c "from run import app; app.app_context().push(); from flask_migrate import upgrade; upgrade()" && cd ..
     startCommand: cd backend && gunicorn -w 1 -b 0.0.0.0:$PORT run:app
     healthCheckPath: /api/health
     envVars:
