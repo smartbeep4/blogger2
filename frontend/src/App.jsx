@@ -1,10 +1,50 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import { BrowserRouter, Routes, Route, Navigate, Link } from "react-router-dom";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import PostList from "./components/posts/PostList";
 
-// Placeholder components - to be implemented
+// Header component with navigation
+const Header = () => {
+  const { user, isAuthenticated, logout } = useAuth();
+
+  return (
+    <header className="header">
+      <div className="container header-content">
+        <Link to="/" className="logo">Blogger2</Link>
+        <nav className="nav-links">
+          {isAuthenticated ? (
+            <>
+              <Link to="/dashboard">Dashboard</Link>
+              <Link to="/posts/new">New Post</Link>
+              <span className="nav-user">Hi, {user?.display_name || user?.username}</span>
+              <button onClick={logout} className="btn btn-outline">Logout</button>
+            </>
+          ) : (
+            <>
+              <Link to="/login">Login</Link>
+              <Link to="/register">Register</Link>
+            </>
+          )}
+        </nav>
+      </div>
+    </header>
+  );
+};
+
+// Layout wrapper
+const Layout = ({ children }) => (
+  <>
+    <Header />
+    <main className="main-content">
+      {children}
+    </main>
+  </>
+);
+
+// Home page with post list
 const Home = () => (
   <div className="container mt-3">
-    <h1>Home - Blog Posts</h1>
+    <h1 className="mb-3">Latest Posts</h1>
+    <PostList />
   </div>
 );
 const Login = () => (
@@ -63,73 +103,75 @@ function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/posts/:slug" element={<PostDetail />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+        <Layout>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/posts/:slug" element={<PostDetail />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
 
-          {/* Protected routes */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/posts/new"
-            element={
-              <ProtectedRoute>
-                <CreatePost />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/posts/:id/edit"
-            element={
-              <ProtectedRoute>
-                <EditPost />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/analytics"
-            element={
-              <ProtectedRoute>
-                <Analytics />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/admin/users"
-            element={
-              <ProtectedRoute>
-                <UserManagement />
-              </ProtectedRoute>
-            }
-          />
+            {/* Protected routes */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/posts/new"
+              element={
+                <ProtectedRoute>
+                  <CreatePost />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/posts/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <EditPost />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/analytics"
+              element={
+                <ProtectedRoute>
+                  <Analytics />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/users"
+              element={
+                <ProtectedRoute>
+                  <UserManagement />
+                </ProtectedRoute>
+              }
+            />
 
-          {/* 404 */}
-          <Route
-            path="*"
-            element={
-              <div className="container mt-3">
-                <h1>404 - Page Not Found</h1>
-              </div>
-            }
-          />
-        </Routes>
+            {/* 404 */}
+            <Route
+              path="*"
+              element={
+                <div className="container mt-3">
+                  <h1>404 - Page Not Found</h1>
+                </div>
+              }
+            />
+          </Routes>
+        </Layout>
       </BrowserRouter>
     </AuthProvider>
   );
