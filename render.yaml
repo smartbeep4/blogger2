@@ -34,6 +34,6 @@ services:
       - key: IMAGEKIT_URL_ENDPOINT
         sync: false
       - key: CORS_ORIGINS
-        value: https://blogger2.onrender.com
+        value: https://blogger2-1.onrender.com
       - key: RATELIMIT_STORAGE_URL
         value: memory://
