@@ -23,7 +23,7 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: FLASK_APP
-        value: backend/run.py
+        value: run.py
       - key: FLASK_ENV
         value: production
       - key: SECRET_KEY

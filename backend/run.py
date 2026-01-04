@@ -7,7 +7,7 @@ load_dotenv()
 
 from app import create_app
 
-# Create the application
+# Create the application for Flask CLI
 app = create_app()
 
 if __name__ == '__main__':
