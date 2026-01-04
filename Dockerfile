@@ -24,8 +24,10 @@ RUN npm install && npm run build
 WORKDIR /app
 COPY backend/ backend/
 
-# Run database migrations
+# Run database migrations (with build flag)
+ENV DOCKER_BUILD=1
 RUN cd backend && python migrate.py
+ENV DOCKER_BUILD=
 
 # Expose port
 EXPOSE 5000

@@ -63,10 +63,10 @@ class ProductionConfig(Config):
     TESTING = False
 
     # Production-specific overrides
-    # Ensure SECRET_KEY and JWT_SECRET_KEY are set
-    if not os.environ.get('SECRET_KEY'):
+    # Only require secrets when not in Docker build context
+    if not os.environ.get('DOCKER_BUILD') and not os.environ.get('SECRET_KEY'):
         raise ValueError("SECRET_KEY environment variable must be set in production")
-    if not os.environ.get('JWT_SECRET_KEY'):
+    if not os.environ.get('DOCKER_BUILD') and not os.environ.get('JWT_SECRET_KEY'):
         raise ValueError("JWT_SECRET_KEY environment variable must be set in production")
 
 
