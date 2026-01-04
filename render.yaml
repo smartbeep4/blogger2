@@ -19,14 +19,14 @@ services:
       # Build frontend
       cd frontend && npm install && npm run build && cd ..
       # Run database migrations
-      cd backend && python -c "from run import app; app.app_context().push(); from flask_migrate import upgrade; upgrade()" && cd ..
+      cd backend && python migrate.py && cd ..
     startCommand: cd backend && gunicorn -w 1 -b 0.0.0.0:$PORT run:app
     healthCheckPath: /api/health
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
       - key: FLASK_APP
-        value: run.py
+        value: run
       - key: FLASK_ENV
         value: production
       - key: SECRET_KEY
