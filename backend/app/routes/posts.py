@@ -127,6 +127,29 @@ def list_posts():
     }), 200
 
 
+@bp.route('/by-id/<int:id>', methods=['GET'])
+@jwt_required()
+def get_post_by_id(id):
+    """Get a single post by ID (authenticated, for editor)."""
+    post = Post.query.get_or_404(id)
+
+    user_id = get_jwt_identity()
+
+    # Check if user can view/edit this post
+    from app.models.user import User
+    user = User.query.get(user_id)
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    # Only allow owner, editor, or admin to view by ID
+    if not (user.role in ['admin', 'editor'] or post.author_id == int(user_id)):
+        return jsonify({"error": "You don't have permission to view this post"}), 403
+
+    return jsonify({
+        'post': post.to_dict(include_content=True)
+    }), 200
+
+
 @bp.route('/<slug>', methods=['GET'])
 def get_post(slug):
     """Get a single post by slug (public for published, authenticated for drafts)."""

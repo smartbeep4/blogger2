@@ -26,6 +26,10 @@ export default function PostEditor() {
 
   const [categories, setCategories] = useState([]);
   const [tags, setTags] = useState([]);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newTagName, setNewTagName] = useState("");
+  const [creatingCategory, setCreatingCategory] = useState(false);
+  const [creatingTag, setCreatingTag] = useState(false);
 
   // Autosave function
   const autosaveContent = useCallback(
@@ -62,7 +66,7 @@ export default function PostEditor() {
 
         // Load post if editing
         if (id) {
-          const postRes = await api.get(`/posts/${id}`);
+          const postRes = await api.get(`/posts/by-id/${id}`);
           const post = postRes.data.post;
 
           // Check if autosave exists
@@ -118,6 +122,44 @@ export default function PostEditor() {
     const options = Array.from(e.target.selectedOptions);
     const values = options.map((opt) => parseInt(opt.value));
     setFormData((prev) => ({ ...prev, [field]: values }));
+  };
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryName.trim()) return;
+    setCreatingCategory(true);
+    try {
+      const response = await api.post("/categories", { name: newCategoryName.trim() });
+      const newCategory = response.data.category;
+      setCategories([...categories, newCategory]);
+      setFormData((prev) => ({
+        ...prev,
+        category_ids: [...prev.category_ids, newCategory.id],
+      }));
+      setNewCategoryName("");
+    } catch (error) {
+      alert(error.response?.data?.error || "Failed to create category");
+    } finally {
+      setCreatingCategory(false);
+    }
+  };
+
+  const handleCreateTag = async () => {
+    if (!newTagName.trim()) return;
+    setCreatingTag(true);
+    try {
+      const response = await api.post("/tags", { name: newTagName.trim() });
+      const newTag = response.data.tag;
+      setTags([...tags, newTag]);
+      setFormData((prev) => ({
+        ...prev,
+        tag_ids: [...prev.tag_ids, newTag.id],
+      }));
+      setNewTagName("");
+    } catch (error) {
+      alert(error.response?.data?.error || "Failed to create tag");
+    } finally {
+      setCreatingTag(false);
+    }
   };
 
   const handleSubmit = async (e, publishNow = false) => {
@@ -269,6 +311,24 @@ export default function PostEditor() {
                 </option>
               ))}
             </select>
+            <div className="inline-create">
+              <input
+                type="text"
+                placeholder="New category name"
+                value={newCategoryName}
+                onChange={(e) => setNewCategoryName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleCreateCategory())}
+                disabled={creatingCategory}
+              />
+              <button
+                type="button"
+                onClick={handleCreateCategory}
+                disabled={creatingCategory || !newCategoryName.trim()}
+                className="btn btn-outline btn-sm"
+              >
+                {creatingCategory ? "..." : "Add"}
+              </button>
+            </div>
           </div>
 
           <div className="form-group">
@@ -286,6 +346,24 @@ export default function PostEditor() {
                 </option>
               ))}
             </select>
+            <div className="inline-create">
+              <input
+                type="text"
+                placeholder="New tag name"
+                value={newTagName}
+                onChange={(e) => setNewTagName(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleCreateTag())}
+                disabled={creatingTag}
+              />
+              <button
+                type="button"
+                onClick={handleCreateTag}
+                disabled={creatingTag || !newTagName.trim()}
+                className="btn btn-outline btn-sm"
+              >
+                {creatingTag ? "..." : "Add"}
+              </button>
+            </div>
           </div>
         </div>
 

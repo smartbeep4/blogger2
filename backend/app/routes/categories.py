@@ -5,7 +5,7 @@ from marshmallow import Schema, fields, validate, ValidationError
 from slugify import slugify
 from app import db
 from app.models.category import Category
-from app.middleware.rbac import require_role
+from app.middleware.rbac import require_role, authenticated_user
 
 bp = Blueprint('categories', __name__)
 
@@ -39,9 +39,9 @@ def get_category(id):
 
 @bp.route('', methods=['POST'])
 @jwt_required()
-@require_role('admin', 'editor')
+@authenticated_user
 def create_category(current_user):
-    """Create a category (admin/editor only)."""
+    """Create a category (any authenticated user)."""
     try:
         schema = CategorySchema()
         data = schema.load(request.json)
